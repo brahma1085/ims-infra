@@ -1,0 +1,147 @@
+version: '3.9'
+
+services:
+  # ==========================================================
+  # ORACLE DATABASE
+  # ==========================================================
+  oracle-db:
+    image: gvenzl/oracle-xe:21-slim
+    container_name: oracle-xe
+    environment:
+      ORACLE_PASSWORD: admin
+      ORACLE_DATABASE: XE
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+      #- ./oracle-sql:/container-entrypoint-initdb.d
+    ports:
+      - "1522:1521"     # Host:1522 → Container:1521
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'SELECT 1 FROM DUAL;' | sqlplus -s SYSTEM/admin@//localhost:1521/XE || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+    restart: always
+
+  # ==========================================================
+  # KEYCLOAK AUTH SERVER
+  # ==========================================================
+  
+  keycloak:
+    image: keycloak/keycloak:25.0
+    container_name: keycloak
+    command:
+      - start-dev
+      #- --import-realm
+    ports:
+      - "8095:8080"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+
+      # ✅ PUBLIC URL (browser + tokens)
+      KC_HOSTNAME_URL: http://localhost:8095
+      KC_HOSTNAME_STRICT: false
+
+      # ✅ IMPORTANT for reverse proxy / gateway setups
+      KC_PROXY: edge
+    volumes:
+      - keycloak-data:/opt/keycloak/data
+      #- ./keycloak-realm:/opt/keycloak/data/import
+    depends_on:
+      oracle-db:
+        condition: service_healthy
+
+    
+  # ==========================================================
+  # GATEWAY SERVICE
+  # ==========================================================
+  gateway-service:
+    build: ./gateway-service
+    container_name: gateway-service
+    ports:
+      - "8090:8080"
+      - "5005:5005"   # For remote debugging
+    environment:
+      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/microservices-realm
+      KEYCLOAK_CLIENT_ID: gateway-service
+      KEYCLOAK_CLIENT_SECRET: gateway-secret-123
+      JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+      SPRING_PROFILES_ACTIVE: dev
+    depends_on:
+      oracle-db:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+    restart: always
+
+  # ==========================================================
+  # ORDERS SERVICE
+  # ==========================================================
+  orders-service:
+    build: ./orders-service
+    container_name: orders-service
+    ports:
+      - "8081:8081"
+      - "5006:5005"   # For remote debugging
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:oracle:thin:@oracle-db:1521/XE
+      SPRING_DATASOURCE_USERNAME: ORDERS_USER
+      SPRING_DATASOURCE_PASSWORD: orders123
+      JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+      SPRING_PROFILES_ACTIVE: dev
+    depends_on:
+      oracle-db:
+        condition: service_healthy
+    #restart: always
+    
+  # ==========================================================
+  # INVENTORY SERVICE
+  # ==========================================================
+  inventory-service:
+    build: ./inventory-service
+    container_name: inventory-service
+    ports:
+      - "8082:8082"
+      - "5007:5005"   # For remote debugging
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:oracle:thin:@oracle-db:1521/XE
+      SPRING_DATASOURCE_USERNAME: INVENTORY_USER
+      SPRING_DATASOURCE_PASSWORD: inv123
+      KEYCLOAK_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: microservices-realm
+      KEYCLOAK_ADMIN_CLIENT_ID: inventory-admin
+      KEYCLOAK_ADMIN_CLIENT_SECRET: MXrleUgNxUfVFWonFCn4ntpGiE983KX5
+      JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+      SPRING_PROFILES_ACTIVE: dev
+    depends_on:
+      oracle-db:
+        condition: service_healthy
+    #restart: always
+    
+  # ==========================================================
+  # CUSTOMERS SERVICE
+  # ==========================================================
+  customers-service:
+    build: ./customers-service
+    container_name: customers-service
+    ports:
+      - "8083:8083"
+      - "5008:5005"   # For remote debugging
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:oracle:thin:@oracle-db:1521/XE
+      SPRING_DATASOURCE_USERNAME: CUSTOMERS_USER
+      SPRING_DATASOURCE_PASSWORD: cust123
+      JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+      SPRING_PROFILES_ACTIVE: dev
+    depends_on:
+      oracle-db:
+        condition: service_healthy
+    #restart: always
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  oracle-data:
+  keycloak-data:

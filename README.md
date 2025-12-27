@@ -3,6 +3,22 @@ Inventory Management System infrastructure details
 
 This repo contains NO business code.
 
+# Microservices System (Oracle + Spring Boot 3.3 + Angular 21)
+
+This system contains:
+
+- Spring Cloud Gateway (port 8080)
+- Orders Microservice (Oracle)
+- Inventory Microservice (Oracle)
+- Customers Microservice (Oracle)
+- Angular UI (port 4200)
+- Docker Compose (Oracle XE + services)
+
+Run the Oracle script first: @oracle-xe/XE2.sql
+
+Then run the generator parts.
+
+
 Purpose: Everything related to AWS, networking, deployment, CI/CD infra
 
 
