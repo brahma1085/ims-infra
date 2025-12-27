@@ -71,4 +71,4 @@ ims-gateway-service	=> Central API gateway
 
 ims-infra	=> AWS, CI/CD, Docker, networking
 
-# ims-infra Structure
+this repo contains NO business code.
