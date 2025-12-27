@@ -71,4 +71,4 @@ ims-gateway-service	=> Central API gateway
 
 ims-infra	=> AWS, CI/CD, Docker, networking
 
-Testing GIT
+Testing strategies, infra as code, deployment scripts
