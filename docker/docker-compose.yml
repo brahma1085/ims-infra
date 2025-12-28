@@ -20,7 +20,7 @@ services:
       interval: 20s
       timeout: 10s
       retries: 10
-    restart: always
+    restart: unless-stopped
 
   # ==========================================================
   # KEYCLOAK AUTH SERVER
@@ -50,6 +50,7 @@ services:
     depends_on:
       oracle-db:
         condition: service_healthy
+    restart: unless-stopped
 
     
   # ==========================================================
@@ -72,7 +73,8 @@ services:
         condition: service_healthy
       keycloak:
         condition: service_started
-    restart: always
+    restart: unless-stopped
+    image: gateway-service:latest
 
   # ==========================================================
   # ORDERS SERVICE
@@ -92,8 +94,8 @@ services:
     depends_on:
       oracle-db:
         condition: service_healthy
-    #restart: always
-    
+    restart: unless-stopped
+
   # ==========================================================
   # INVENTORY SERVICE
   # ==========================================================
@@ -116,8 +118,8 @@ services:
     depends_on:
       oracle-db:
         condition: service_healthy
-    #restart: always
-    
+    restart: unless-stopped
+
   # ==========================================================
   # CUSTOMERS SERVICE
   # ==========================================================
@@ -136,7 +138,7 @@ services:
     depends_on:
       oracle-db:
         condition: service_healthy
-    #restart: always
+    restart: unless-stopped
 
 networks:
   default:
