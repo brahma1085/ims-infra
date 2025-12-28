@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts-jdk17
+    container_name: jenkins
+    user: root               # 👈 IMPORTANT
+    ports:
+      - "8085:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker   # 👈 gives docker CLI
+    restart: unless-stopped
+    networks:
+      - ims-network
+
+networks:
+  ims-network:
+    external: true
+
+volumes:
+  jenkins_home:
