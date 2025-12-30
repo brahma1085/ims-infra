@@ -29,6 +29,7 @@ pipeline {
 				)]) {
 					sh '''
 						set -eux
+						echo "Git user is: $GIT_USER"
 						git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-infra.git
 						git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-angular-ui.git
 						git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-gateway-service.git
