@@ -1,106 +1,111 @@
 pipeline {
-    agent any
+	agent any
 
-    environment {
-        REGISTRY = "local"
-        COMPOSE_DIR = "docker"
-    }
+	environment {
+		REGISTRY = "local"
+		COMPOSE_DIR = "docker"
+	}
 
-    tools {
-        jdk 'jdk17'
-        maven 'maven3'
-        nodejs 'node18'
-    }
+	tools {
+		jdk 'jdk17'
+		maven 'maven3'
+		nodejs 'node18'
+	}
 
-    stages {
+	stages {
 
-        stage('Checkout Repositories') {
-            steps {
-                cleanWs()
-                sh '''
-                git clone https://github.com/brahma1085/ims-infra.git
-                git clone https://github.com/brahma1085/ims-angular-ui.git
-                git clone https://github.com/brahma1085/ims-gateway-service.git
-                git clone https://github.com/brahma1085/ims-inventory-service.git
-                git clone https://github.com/brahma1085/ims-customers-service.git
-                git clone https://github.com/brahma1085/ims-order-service.git
-                '''
-            }
-        }
+		stage('Checkout Repositories') {
+			steps {
+				cleanWs()
+				withCredentials([usernamePassword(
+					credentialsId: 'github-pat',
+					usernameVariable: 'GIT_USER',
+					passwordVariable: 'GIT_TOKEN'
+				)]) {
+					sh '''
+    				git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-infra.git
+    				git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-angular-ui.git
+    				git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-gateway-service.git
+    				git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-inventory-service.git
+    				git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-customers-service.git
+  					'''
+				}
+			}
+		}
 
-        stage('Build Angular UI') {
-            steps {
-                dir('ims-angular-ui') {
-                    sh '''
+		stage('Build Angular UI') {
+			steps {
+				dir('ims-angular-ui') {
+					sh '''
                     npm install
                     npm run build
                     '''
-                }
-            }
-        }
+				}
+			}
+		}
 
-        stage('Build Spring Boot Services') {
-            parallel {
-                stage('Gateway') {
-                    steps {
-                        dir('ims-gateway-service') {
-                            sh 'mvn clean package -DskipTests'
-                        }
-                    }
-                }
-                stage('Inventory') {
-                    steps {
-                        dir('ims-inventory-service') {
-                            sh 'mvn clean package -DskipTests'
-                        }
-                    }
-                }
-                stage('Customers') {
-                    steps {
-                        dir('ims-customers-service') {
-                            sh 'mvn clean package -DskipTests'
-                        }
-                    }
-                }
-                stage('Orders') {
-                    steps {
-                        dir('ims-order-service') {
-                            sh 'mvn clean package -DskipTests'
-                        }
-                    }
-                }
-            }
-        }
+		stage('Build Spring Boot Services') {
+			parallel {
+				stage('Gateway') {
+					steps {
+						dir('ims-gateway-service') {
+							sh 'mvn clean package -DskipTests'
+						}
+					}
+				}
+				stage('Inventory') {
+					steps {
+						dir('ims-inventory-service') {
+							sh 'mvn clean package -DskipTests'
+						}
+					}
+				}
+				stage('Customers') {
+					steps {
+						dir('ims-customers-service') {
+							sh 'mvn clean package -DskipTests'
+						}
+					}
+				}
+				stage('Orders') {
+					steps {
+						dir('ims-order-service') {
+							sh 'mvn clean package -DskipTests'
+						}
+					}
+				}
+			}
+		}
 
-        stage('Docker Build Images') {
-            steps {
-                sh '''
+		stage('Docker Build Images') {
+			steps {
+				sh '''
                 docker build -t gateway-service ./ims-gateway-service
                 docker build -t inventory-service ./ims-inventory-service
                 docker build -t customers-service ./ims-customers-service
                 docker build -t orders-service ./ims-order-service
                 '''
-            }
-        }
+			}
+		}
 
-        stage('Deploy via Docker Compose') {
-            steps {
-                dir('ims-infra/docker') {
-                    sh '''
+		stage('Deploy via Docker Compose') {
+			steps {
+				dir('ims-infra/docker') {
+					sh '''
                     docker compose down
                     docker compose up -d
                     '''
-                }
-            }
-        }
-    }
+				}
+			}
+		}
+	}
 
-    post {
-        success {
-            echo "✅ IMS deployed successfully"
-        }
-        failure {
-            echo "❌ Build failed"
-        }
-    }
+	post {
+		success {
+			echo "✅ IMS deployed successfully"
+		}
+		failure {
+			echo "❌ Build failed"
+		}
+	}
 }
