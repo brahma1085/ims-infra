@@ -20,6 +20,19 @@ pipeline {
 			}
 		}
 
+		stage('DEBUG: Shell Test') {
+			steps {
+				sh '''
+				  set -x
+				  echo "Shell is working"
+				  which sh
+				  which bash || true
+				  ls -l /bin || true
+				'''
+			}
+		}
+
+
 		stage('Checkout Repositories') {
 			steps {
 				withCredentials([usernamePassword(
@@ -28,7 +41,7 @@ pipeline {
 					passwordVariable: 'GIT_TOKEN'
 				)]) {
 					sh '''
-						set -eux
+						set -x
 						echo "Git user is: $GIT_USER"
 						git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-infra.git
 						git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-angular-ui.git
