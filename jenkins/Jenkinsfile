@@ -14,21 +14,27 @@ pipeline {
 
 	stages {
 
-		stage('Checkout Repositories') {
+		stage('Prepare Workspace') {
 			steps {
 				cleanWs()
+			}
+		}
+
+		stage('Checkout Repositories') {
+			steps {
 				withCredentials([usernamePassword(
-					credentialsId: 'github-pat',
+					credentialsId: 'ims-pa-token',
 					usernameVariable: 'GIT_USER',
 					passwordVariable: 'GIT_TOKEN'
 				)]) {
 					sh '''
-    				git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-infra.git
-    				git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-angular-ui.git
-    				git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-gateway-service.git
-    				git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-inventory-service.git
-    				git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-customer-service.git
-    				git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-order-service.git
+						set -eux
+						git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-infra.git
+						git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-angular-ui.git
+						git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-gateway-service.git
+						git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-inventory-service.git
+						git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-customer-service.git
+						git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-order-service.git
   					'''
 				}
 			}
