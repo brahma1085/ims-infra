@@ -64,7 +64,7 @@ pipeline {
 				}
 				stage('Customers') {
 					steps {
-						dir('ims-customers-service') {
+						dir('ims-customer-service') {
 							sh 'mvn clean package -DskipTests'
 						}
 					}
@@ -84,7 +84,7 @@ pipeline {
 				sh '''
                 docker build -t gateway-service ./ims-gateway-service
                 docker build -t inventory-service ./ims-inventory-service
-                docker build -t customers-service ./ims-customers-service
+                docker build -t customers-service ./ims-customer-service
                 docker build -t orders-service ./ims-order-service
                 '''
 			}
