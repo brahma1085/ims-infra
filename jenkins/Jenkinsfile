@@ -27,11 +27,13 @@ pipeline {
     				git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-angular-ui.git
     				git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-gateway-service.git
     				git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-inventory-service.git
-    				git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-customers-service.git
+    				git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-customer-service.git
+    				git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-order-service.git
   					'''
 				}
 			}
 		}
+
 
 		stage('Build Angular UI') {
 			steps {
