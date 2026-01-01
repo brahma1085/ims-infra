@@ -62,16 +62,18 @@ pipeline {
 
 
 
+
 		stage('Build Angular UI') {
 			steps {
 				dir('ims-angular-ui') {
 					sh '''
-                    npm install
-                    npm run build
-                    '''
+        npm install
+        npm run build
+      '''
 				}
 			}
 		}
+
 
 		stage('Build Spring Boot Services') {
 			parallel {
@@ -109,13 +111,14 @@ pipeline {
 		stage('Docker Build Images') {
 			steps {
 				sh '''
-                docker build -t gateway-service ./ims-gateway-service
-                docker build -t inventory-service ./ims-inventory-service
-                docker build -t customers-service ./ims-customer-service
-                docker build -t orders-service ./ims-order-service
-                '''
+      docker build -t gateway-service ./ims-gateway-service
+      docker build -t inventory-service ./ims-inventory-service
+      docker build -t customers-service ./ims-customer-service
+      docker build -t orders-service ./ims-order-service
+    '''
 			}
 		}
+
 
 		stage('Deploy via Docker Compose') {
 			steps {
