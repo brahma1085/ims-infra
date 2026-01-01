@@ -6,11 +6,11 @@ pipeline {
 		COMPOSE_DIR = "docker"
 	}
 
-	tools {
+	/*tools {
 		jdk 'jdk17'
 		maven 'maven3'
 		nodejs 'node18'
-	}
+	}*/
 
 	stages {
 
