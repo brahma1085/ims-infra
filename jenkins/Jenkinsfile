@@ -40,7 +40,7 @@ pipeline {
 		stage('Checkout Repositories') {
 			steps {
 				withCredentials([usernamePassword(
-					credentialsId: 'ims-pa-token',
+					credentialsId: '392e1f66-aafc-4712-a4be-876533b9f267',
 					usernameVariable: 'GIT_USER',
 					passwordVariable: 'GIT_TOKEN'
 				)]) {
