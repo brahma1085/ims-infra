@@ -63,7 +63,7 @@ pipeline {
 
 
 
-		stage('Build Angular UI') {
+		/*stage('Build Angular UI') {
 			steps {
 				dir('ims-angular-ui') {
 					sh '''
@@ -72,7 +72,20 @@ pipeline {
       '''
 				}
 			}
-		}
+		}*/
+
+		stage('Build Angular UI') {
+			steps {
+				dir('ims-angular-ui') {
+					sh '''
+              export NODE_OPTIONS="--max-old-space-size=1536"
+              npm install --no-audit --no-fund
+              npm run build -- --configuration=production
+            '''
+        }
+    }
+}
+
 
 
 		stage('Build Spring Boot Services') {
