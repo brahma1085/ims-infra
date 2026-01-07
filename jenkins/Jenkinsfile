@@ -1,156 +1,129 @@
 pipeline {
 	agent any
 
-	options {
+    options {
 		skipDefaultCheckout(true)
-	}
+        timestamps()
+    }
 
-	environment {
-		REGISTRY = "local"
-		COMPOSE_DIR = "docker"
-	}
+    environment {
+		REGISTRY    = "local"
+        COMPOSE_DIR = "docker"
+        // Limit JVM & Node memory to avoid OOM
+        MAVEN_OPTS  = "-Xmx512m"
+        NODE_OPTIONS = "--max-old-space-size=1024"
+    }
 
-	tools {
-		jdk 'jdk17'
-		maven 'maven3'
-		nodejs 'node20'
-	}
+    tools {
+		jdk    'jdk17'
+        maven 'maven3'
+        nodejs 'node20'
+    }
 
-	stages {
+    stages {
 
 		stage('Prepare Workspace') {
 			steps {
 				deleteDir()
-			}
-		}
-
-		stage('DEBUG: Shell Test') {
-			steps {
-				sh '''
-				  set -x
-				  echo "Shell is working"
-				  which sh
-				  which bash || true
-				  ls -l /bin || true
-				'''
-			}
-		}
-
-
-		stage('Checkout Repositories') {
-			steps {
-				withCredentials([usernamePassword(
-					credentialsId: '392e1f66-aafc-4712-a4be-876533b9f267',
-					usernameVariable: 'GIT_USER',
-					passwordVariable: 'GIT_TOKEN'
-				)]) {
-					sh '''
-        set -x
-
-        echo "Git user is: $GIT_USER"
-
-        git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-infra.git
-        git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-angular-ui.git
-        git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-gateway-service.git
-        git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-inventory-service.git
-        git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-customer-service.git
-        git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-order-service.git
-      '''
-				}
-			}
-		}
-
-
-
-
-		/*stage('Build Angular UI') {
-			steps {
-				dir('ims-angular-ui') {
-					sh '''
-        npm install
-        npm run build
-      '''
-				}
-			}
-		}*/
-
-		stage('Build Angular UI') {
-			steps {
-				dir('ims-angular-ui') {
-					sh '''
-              export NODE_OPTIONS="--max-old-space-size=1536"
-              npm install --no-audit --no-fund
-              npm run build -- --configuration=production
-            '''
+            }
         }
-    }
-}
 
+        stage('Checkout Repositories') {
+			steps {
+				withCredentials([
+                    usernamePassword(
+                        credentialsId: '392e1f66-aafc-4712-a4be-876533b9f267',
+                        usernameVariable: 'GIT_USER',
+                        passwordVariable: 'GIT_TOKEN'
+                    )
+                ]) {
+					sh '''
+                        set -e
+                        git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-infra.git
+                        git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-angular-ui.git
+                        git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-gateway-service.git
+                        git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-inventory-service.git
+                        git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-customer-service.git
+                        git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-order-service.git
+                    '''
+                }
+            }
+        }
 
+        stage('Build Angular UI') {
+			steps {
+				dir('ims-angular-ui') {
+					sh '''
+                        node -v
+                        npm -v
+                        npm install --no-audit --no-fund
+                        npm run build -- --configuration=production
+                    '''
+                }
+            }
+        }
 
-		stage('Build Spring Boot Services') {
-			parallel {
-				stage('Gateway') {
-					steps {
-						dir('ims-gateway-service') {
-							sh 'mvn clean package -DskipTests'
-						}
-					}
-				}
-				stage('Inventory') {
-					steps {
-						dir('ims-inventory-service') {
-							sh 'mvn clean package -DskipTests'
-						}
-					}
-				}
-				stage('Customers') {
-					steps {
-						dir('ims-customer-service') {
-							sh 'mvn clean package -DskipTests'
-						}
-					}
-				}
-				stage('Orders') {
-					steps {
-						dir('ims-order-service') {
-							sh 'mvn clean package -DskipTests'
-						}
-					}
-				}
-			}
-		}
+        stage('Build Gateway Service') {
+			steps {
+				dir('ims-gateway-service') {
+					sh 'mvn clean package -DskipTests'
+                }
+            }
+        }
 
-		stage('Docker Build Images') {
+        stage('Build Inventory Service') {
+			steps {
+				dir('ims-inventory-service') {
+					sh 'mvn clean package -DskipTests'
+                }
+            }
+        }
+
+        stage('Build Customer Service') {
+			steps {
+				dir('ims-customer-service') {
+					sh 'mvn clean package -DskipTests'
+                }
+            }
+        }
+
+        stage('Build Order Service') {
+			steps {
+				dir('ims-order-service') {
+					sh 'mvn clean package -DskipTests'
+                }
+            }
+        }
+
+        stage('Docker Build Images') {
 			steps {
 				sh '''
-      docker build -t gateway-service ./ims-gateway-service
-      docker build -t inventory-service ./ims-inventory-service
-      docker build -t customers-service ./ims-customer-service
-      docker build -t orders-service ./ims-order-service
-    '''
-			}
-		}
+                    docker build -t gateway-service ./ims-gateway-service
+                    docker build -t inventory-service ./ims-inventory-service
+                    docker build -t customers-service ./ims-customer-service
+                    docker build -t orders-service ./ims-order-service
+                '''
+            }
+        }
 
-
-		stage('Deploy via Docker Compose') {
+        stage('Deploy via Docker Compose') {
 			steps {
 				dir('ims-infra/docker') {
 					sh '''
-                    docker compose down
-                    docker compose up -d
+                        docker compose down
+                        docker compose up -d
                     '''
-				}
-			}
-		}
-	}
+                }
+            }
+        }
+    }
 
-	post {
+    post {
 		success {
-			echo "✅ IMS deployed successfully"
-		}
-		failure {
-			echo "❌ Build failed"
-		}
-	}
+			echo "✅ IMS deployed successfully on t3.small"
+        }
+        failure {
+			echo "❌ Build failed – check logs"
+        }
+    }
 }
