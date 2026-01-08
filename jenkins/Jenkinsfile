@@ -3,11 +3,13 @@ pipeline {
 
 	options {
 		skipDefaultCheckout(true)
+		timestamps()
+		disableConcurrentBuilds()   // ⛔ avoid overlapping docker compose runs
 	}
 
 	environment {
 		REGISTRY = "local"
-		COMPOSE_DIR = "docker"
+		COMPOSE_DIR = "ims-infra/docker"
 	}
 
 	tools {
@@ -17,6 +19,36 @@ pipeline {
 	}
 
 	stages {
+
+        stage('Pre-flight Safety Checks') {
+                    steps {
+                        sh '''
+                            echo "===== Pre-flight checks ====="
+
+                            echo "1️⃣ Checking Docker availability"
+                            docker version || { echo "❌ Docker not running"; exit 1; }
+
+                            echo "2️⃣ Checking docker compose"
+                            docker compose version || { echo "❌ docker compose not available"; exit 1; }
+
+                            echo "3️⃣ Checking Node / Maven / Java"
+                            node -v
+                            npm -v
+                            mvn -v
+                            java -version
+
+                            echo "4️⃣ Checking for port conflicts"
+                            for p in 8080 8081 8082 8083 8090 8095; do
+                              if ss -lnt | grep -q ":$p "; then
+                                echo "❌ Port $p already in use. Stop local apps first."
+                                exit 1
+                              fi
+                            done
+
+                            echo "✅ Pre-flight checks passed"
+                        '''
+                    }
+                }
 
 		stage('Prepare Workspace') {
 			steps {
@@ -45,7 +77,7 @@ pipeline {
 					passwordVariable: 'GIT_TOKEN'
 				)]) {
 					sh '''
-        set -x
+        set -e
 
         echo "Git user is: $GIT_USER"
 
@@ -134,14 +166,18 @@ pipeline {
 
 
 		stage('Deploy via Docker Compose') {
-			steps {
-				dir('ims-infra/docker') {
-					sh '''
-                    docker compose up -d --build
-                    '''
-				}
-			}
-		}
+                    steps {
+                        dir("${COMPOSE_DIR}") {
+                            sh '''
+                                echo "Stopping old stack (if any)"
+                                docker compose down || true
+
+                                echo "Starting new stack"
+                                docker compose up -d
+                            '''
+                        }
+                    }
+                }
 	}
 
 	post {
