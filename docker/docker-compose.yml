@@ -112,7 +112,7 @@ services:
       KEYCLOAK_SERVER_URL: http://keycloak:8080
       KEYCLOAK_REALM: microservices-realm
       KEYCLOAK_ADMIN_CLIENT_ID: inventory-admin
-      KEYCLOAK_ADMIN_CLIENT_SECRET: MXrleUgNxUfVFWonFCn4ntpGiE983KX5
+      KEYCLOAK_ADMIN_CLIENT_SECRET: 6wazlFFlbZ4d6W2HouoTiW5Rpuow6Lv4
       JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
       SPRING_PROFILES_ACTIVE: dev
     depends_on:
