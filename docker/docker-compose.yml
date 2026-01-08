@@ -57,7 +57,7 @@ services:
   # GATEWAY SERVICE
   # ==========================================================
   gateway-service:
-    build: ./gateway-service
+    build: ../../gateway-service
     container_name: gateway-service
     ports:
       - "8090:8080"
@@ -80,7 +80,7 @@ services:
   # ORDERS SERVICE
   # ==========================================================
   orders-service:
-    build: ./orders-service
+    build: ../../orders-service
     container_name: orders-service
     ports:
       - "8081:8081"
@@ -100,7 +100,7 @@ services:
   # INVENTORY SERVICE
   # ==========================================================
   inventory-service:
-    build: ./inventory-service
+    build: ../../inventory-service
     container_name: inventory-service
     ports:
       - "8082:8082"
@@ -124,7 +124,7 @@ services:
   # CUSTOMERS SERVICE
   # ==========================================================
   customers-service:
-    build: ./customers-service
+    build: ../../customers-service
     container_name: customers-service
     ports:
       - "8083:8083"
