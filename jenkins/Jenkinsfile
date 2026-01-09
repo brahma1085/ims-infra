@@ -131,7 +131,7 @@ pipeline {
         }
         }
         sh '''
-        echo "Preparing Angular dist for Docker deployment"'
+        echo "Preparing Angular dist for Docker deployment"
           rm -rf ${ANGULAR_DIST}
           mkdir -p ${ANGULAR_DIST}
           cp -r ims-angular-ui/dist/** ${ANGULAR_DIST}/
