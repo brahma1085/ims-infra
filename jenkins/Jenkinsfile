@@ -10,6 +10,7 @@ pipeline {
 	environment {
 		REGISTRY = "local"
 		COMPOSE_DIR = "ims-infra/docker"
+		ANGULAR_DIST = "ims-infra/docker/angular-dist"
 	}
 
 	tools {
@@ -56,7 +57,7 @@ pipeline {
 			}
 		}
 
-		stage('DEBUG: Shell Test') {
+		/* stage('DEBUG: Shell Test') {
 			steps {
 				sh '''
 				  set -x
@@ -66,7 +67,7 @@ pipeline {
 				  ls -l /bin || true
 				'''
 			}
-		}
+		} */
 
 
 		stage('Checkout Repositories') {
@@ -115,6 +116,12 @@ pipeline {
               npm run build -- --configuration=production
             '''
         }
+        sh '''
+        echo "Preparing Angular dist for Docker deployment"'
+          rm -rf ${ANGULAR_DIST}/*
+          mkdir -p ${ANGULAR_DIST}
+          cp -r ims-angular-ui/dist/ims-angular-ui/* ${ANGULAR_DIST}/
+        '''
     }
 }
 
@@ -183,6 +190,8 @@ pipeline {
 	post {
 		success {
 			echo "✅ IMS deployed successfully"
+			echo "➡ UI: http://localhost:8090"
+            echo "➡ Keycloak: http://localhost:8095"
 		}
 		failure {
 			echo "❌ Build failed"

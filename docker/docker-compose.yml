@@ -140,6 +140,18 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # ==========================================================
+  # ANGULAR UI (SERVES dist/ via NGINX)
+  # ==========================================================
+  angular-ui:
+    image: nginx:alpine
+    container_name: angular-ui
+    ports:
+      - "4200:80"           # optional direct access
+    volumes:
+      - ./angular-dist:/usr/share/nginx/html:ro
+    restart: unless-stopped
+
 networks:
   default:
     driver: bridge
