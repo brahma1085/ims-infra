@@ -124,7 +124,7 @@ pipeline {
                           echo "❌ Node 20 not active. Aborting."
                           exit 1
                         fi
-              export NODE_OPTIONS="--max-old-space-size=1536"
+            echo "Installing Angular dependencies and building for production"
               npm install --no-audit --no-fund
               npm run build -- --configuration=production
             '''
