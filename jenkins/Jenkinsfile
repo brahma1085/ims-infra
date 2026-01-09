@@ -5,7 +5,7 @@ pipeline {
 		skipDefaultCheckout(true)
 		timestamps()
 		disableConcurrentBuilds()   // ⛔ avoid overlapping docker compose runs
-		timeout(time: 30, unit: 'MINUTES')   // ⛔ absolute safety net
+		timeout(time: 60, unit: 'MINUTES')   // ⛔ absolute safety net
 	}
 
 	environment {
