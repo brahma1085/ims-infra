@@ -5,6 +5,7 @@ pipeline {
 		skipDefaultCheckout(true)
 		timestamps()
 		disableConcurrentBuilds()   // ⛔ avoid overlapping docker compose runs
+		timeout(time: 60, unit: 'MINUTES')   // ⛔ absolute safety net
 	}
 
 	environment {
@@ -109,6 +110,7 @@ pipeline {
 
 		stage('Build Angular UI') {
 			steps {
+			  timeout(time: 20, unit: 'MINUTES') {   // ⛔ Angular hang protection
 				dir('ims-angular-ui') {
 					sh '''
               export NODE_OPTIONS="--max-old-space-size=1536"
@@ -118,9 +120,9 @@ pipeline {
         }
         sh '''
         echo "Preparing Angular dist for Docker deployment"'
-          rm -rf ${ANGULAR_DIST}/*
+          rm -rf ${ANGULAR_DIST}
           mkdir -p ${ANGULAR_DIST}
-          cp -r ims-angular-ui/dist/ims-angular-ui/* ${ANGULAR_DIST}/
+          cp -r ims-angular-ui/dist/** ${ANGULAR_DIST}/
         '''
     }
 }
