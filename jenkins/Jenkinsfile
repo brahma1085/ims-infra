@@ -118,6 +118,7 @@ pipeline {
               npm run build -- --configuration=production
             '''
         }
+        }
         sh '''
         echo "Preparing Angular dist for Docker deployment"'
           rm -rf ${ANGULAR_DIST}
