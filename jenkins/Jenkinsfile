@@ -110,7 +110,7 @@ pipeline {
 
 		stage('Build Angular UI') {
 			steps {
-			  timeout(time: 20, unit: 'MINUTES') {   // ⛔ Angular hang protection
+			  timeout(time: 40, unit: 'MINUTES') {   // ⛔ Angular hang protection
 				dir('ims-angular-ui') {
 					sh '''
 					set -e
