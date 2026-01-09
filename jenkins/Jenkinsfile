@@ -116,6 +116,9 @@ pipeline {
 					set -e
 					 echo "🔍 Enforcing Node 20"
                         export PATH="$NODEJS_HOME/bin:$PATH"
+                        export NG_BUILD_CACHE=/var/jenkins_home/angular-cache
+                        mkdir -p $NG_BUILD_CACHE
+                        export NG_PERSISTENT_BUILD_CACHE=1
 
                         node -v
                         npm -v
@@ -125,8 +128,8 @@ pipeline {
                           exit 1
                         fi
             echo "Installing Angular dependencies and building for production"
-              npm install --no-audit --no-fund
-              npm run build -- --configuration=production
+              npm ci --no-audit --no-fund
+              npm run build -- --configuration=production --cache
             '''
         }
         }
