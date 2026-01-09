@@ -5,7 +5,7 @@ pipeline {
 		skipDefaultCheckout(true)
 		timestamps()
 		disableConcurrentBuilds()   // ⛔ avoid overlapping docker compose runs
-		timeout(time: 60, unit: 'MINUTES')   // ⛔ absolute safety net
+		timeout(time: 30, unit: 'MINUTES')   // ⛔ absolute safety net
 	}
 
 	environment {
@@ -113,6 +113,17 @@ pipeline {
 			  timeout(time: 20, unit: 'MINUTES') {   // ⛔ Angular hang protection
 				dir('ims-angular-ui') {
 					sh '''
+					set -e
+					 echo "🔍 Enforcing Node 20"
+                        export PATH="$NODEJS_HOME/bin:$PATH"
+
+                        node -v
+                        npm -v
+
+                        if ! node -v | grep -q "v20"; then
+                          echo "❌ Node 20 not active. Aborting."
+                          exit 1
+                        fi
               export NODE_OPTIONS="--max-old-space-size=1536"
               npm install --no-audit --no-fund
               npm run build -- --configuration=production
