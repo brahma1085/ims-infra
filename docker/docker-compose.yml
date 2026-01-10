@@ -60,7 +60,7 @@ services:
     build: ../../gateway-service
     container_name: gateway-service
     ports:
-      - "8080"
+      - "8090:8080"
       - "5005:5005"   # For remote debugging
     environment:
       KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/microservices-realm
@@ -153,6 +153,8 @@ services:
       - ./angular-dist:/usr/share/nginx/html:ro
       - ./nginx:/etc/nginx/conf.d:ro
     restart: unless-stopped
+    depends_on:
+      - gateway-service
 
 networks:
   default:
