@@ -109,9 +109,9 @@ pipeline {
 		}*/
 
 		stage('Build Angular UI') {
-		  when {
-            changeset "ims-angular-ui/**"
-          }
+		  /* when {
+            changeset "ims-angular-ui *//**"
+          } */
           steps {
             timeout(time: 40, unit: 'MINUTES') {
               dir('ims-angular-ui') {
