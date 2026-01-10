@@ -146,6 +146,8 @@ services:
   angular-ui:
     image: nginx:alpine
     container_name: angular-ui
+    expose:
+      - "80"
     volumes:
       - ./angular-dist:/usr/share/nginx/html:ro
       - ./nginx:/etc/nginx/conf.d:ro
