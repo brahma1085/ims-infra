@@ -146,9 +146,6 @@ services:
   angular-ui:
     image: nginx:alpine
     container_name: angular-ui
-    ports:
-      - "4200:80"           # optional direct access
-      - "8090:80"
     volumes:
       - ./angular-dist:/usr/share/nginx/html:ro
       - ./nginx:/etc/nginx/conf.d:ro
