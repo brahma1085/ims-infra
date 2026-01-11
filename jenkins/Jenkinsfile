@@ -12,6 +12,7 @@ pipeline {
 		REGISTRY = "local"
 		COMPOSE_DIR = "ims-infra/docker"
 		ANGULAR_DIST = "ims-infra/docker/angular-dist"
+		NPM_CONFIG_CACHE = "/var/jenkins_home/.npm"
 	}
 
 	tools {
@@ -96,22 +97,10 @@ pipeline {
 
 
 
-
-		/*stage('Build Angular UI') {
-			steps {
-				dir('ims-angular-ui') {
-					sh '''
-        npm install
-        npm run build
-      '''
-				}
-			}
-		}*/
-
 		stage('Build Angular UI') {
-		  /* when {
-            changeset "ims-angular-ui *//**"
-          } */
+		  when {
+            changeset "**/ims-angular-ui/**"
+          }
           steps {
             timeout(time: 40, unit: 'MINUTES') {
               dir('ims-angular-ui') {
