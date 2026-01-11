@@ -13,6 +13,7 @@ pipeline {
 		COMPOSE_DIR = "ims-infra/docker"
 		ANGULAR_DIST = "ims-infra/docker/angular-dist"
 		NPM_CONFIG_CACHE = "/var/jenkins_home/.npm"
+		JAVA_OPTS="-Dorg.jenkinsci.plugins.durabletask.BourneShellScript.HEARTBEAT_CHECK_INTERVAL=86400"
 	}
 
 	tools {
@@ -113,6 +114,7 @@ pipeline {
 
                             echo "🏗️ Building Angular"
                             npm run build -- --configuration=production
+                            kill $KEEPALIVE_PID
                         '''
                     }
                 }
@@ -122,6 +124,9 @@ pipeline {
                     rm -rf ${ANGULAR_DIST}
                     mkdir -p ${ANGULAR_DIST}
                     cp -r ims-angular-ui/dist/angular-ui-cli/browser/* ${ANGULAR_DIST}/
+                    echo "🔎 Verifying Angular dist"
+                    ls -l ${ANGULAR_DIST}
+                    test -f ${ANGULAR_DIST}/index.html || { echo "❌ index.html missing"; exit 1; }
                 '''
             }
         }
