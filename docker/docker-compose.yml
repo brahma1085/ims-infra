@@ -148,7 +148,7 @@ services:
   angular-ui:
     image: nginx:alpine
     container_name: angular-ui
-    expose:
+    ports:
       - "8090:80"
     volumes:
       - ./angular-dist:/usr/share/nginx/html:ro
