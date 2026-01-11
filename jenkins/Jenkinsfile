@@ -114,7 +114,6 @@ pipeline {
 
                             echo "🏗️ Building Angular"
                             npm run build -- --configuration=production
-                            kill $KEEPALIVE_PID
                         '''
                     }
                 }
