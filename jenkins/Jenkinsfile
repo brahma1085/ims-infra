@@ -98,48 +98,34 @@ pipeline {
 
 
 		stage('Build Angular UI') {
-		  when {
-            changeset "**/ims-angular-ui/**"
-          }
-          steps {
-            timeout(time: 40, unit: 'MINUTES') {
-              dir('ims-angular-ui') {
+            steps {
+                timeout(time: 40, unit: 'MINUTES') {
+                    dir('ims-angular-ui') {
+                        sh '''
+                            set -e
+                            echo "🔍 Enforcing Node 20"
+                            export PATH="$NODEJS_HOME/bin:$PATH"
+
+                            node -v | grep v20
+
+                            echo "📦 Installing dependencies"
+                            npm ci --no-audit --no-fund
+
+                            echo "🏗️ Building Angular"
+                            npm run build -- --configuration=production
+                        '''
+                    }
+                }
+
                 sh '''
-                  set -e
-
-                  echo "🔍 Enforcing Node 20"
-                  export PATH="$NODEJS_HOME/bin:$PATH"
-
-                  export NG_BUILD_CACHE=/var/jenkins_home/angular-cache
-                  export NG_PERSISTENT_BUILD_CACHE=1
-                  mkdir -p $NG_BUILD_CACHE
-
-                  node -v
-                  npm -v
-
-                  if ! node -v | grep -q "v20"; then
-                    echo "❌ Node 20 not active. Aborting."
-                    exit 1
-                  fi
-
-                  echo "📦 Installing dependencies"
-                  npm ci --no-audit --no-fund
-
-                  echo "🏗️ Building Angular for production"
-                  npm run build -- --configuration=production
+                    echo "📦 Preparing Angular dist for Docker"
+                    rm -rf ${ANGULAR_DIST}
+                    mkdir -p ${ANGULAR_DIST}
+                    cp -r ims-angular-ui/dist/angular-ui-cli/browser/* ${ANGULAR_DIST}/
                 '''
-              }
             }
-
-            sh '''
-              set -e
-              echo "📦 Preparing Angular dist for Docker deployment"
-              rm -rf ${ANGULAR_DIST}
-              mkdir -p ${ANGULAR_DIST}
-              cp -r ims-angular-ui/dist/angular-ui-cli/browser/* ${ANGULAR_DIST}/
-            '''
-          }
         }
+
 
 
 
