@@ -60,7 +60,6 @@ services:
     build: ../../gateway-service
     container_name: gateway-service
     ports:
-      - "8080:8080"
       - "5005:5005"   # For remote debugging
     expose:
         - "8080"
