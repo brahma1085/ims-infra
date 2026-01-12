@@ -123,6 +123,24 @@ pipeline {
                 }
             }
         }
+        stage('Docker Cleanup (Pre-Build)') {
+            steps {
+                dir("${COMPOSE_DIR}") {
+                    sh '''
+                        echo "🧹 Cleaning up any running containers before build"
+                        docker compose down --remove-orphans || true
+
+                        echo "🧹 Pruning dangling containers (safe)"
+                        docker container prune -f || true
+
+                        echo "🧹 Pruning unused networks (safe)"
+                        docker network prune -f || true
+
+                        echo "✅ Docker cleanup completed (volumes preserved)"
+                    '''
+                }
+            }
+        }
         stage('Docker Build Images') {
           steps {
             sh '''
@@ -153,8 +171,8 @@ pipeline {
                     steps {
                         dir("${COMPOSE_DIR}") {
                             sh '''
-                                echo "Stopping old stack (if any)"
-                                docker compose down || true
+                                #echo "Stopping old stack (if any)"
+                                #docker compose down || true
 
                                 echo "Starting new stack"
                                 docker compose up -d
