@@ -1,0 +1,41 @@
+┌────────────────────────────┐
+│          Browser           │
+│  http://localhost:8090     │
+└─────────────┬──────────────┘
+              │
+              ▼
+┌────────────────────────────┐
+│      angular-ui (NGINX)    │
+│  - Serves Angular static   │
+│  - /api → gateway-service  │
+│  Port: 80 (mapped 8090)    │
+└─────────────┬──────────────┘
+              │ /api/**
+              ▼
+┌────────────────────────────┐
+│     gateway-service        │
+│  Spring Cloud Gateway      │
+│  - JWT validation          │
+│  - Route forwarding        │
+│  Port: 8080 (internal)     │
+└───────┬─────────┬──────────┘
+        │         │
+        ▼         ▼
+┌────────────┐ ┌────────────┐
+│ orders     │ │ inventory  │
+│ service    │ │ service    │
+│ 8081       │ │ 8082       │
+└────────────┘ └────────────┘
+        │
+        ▼
+┌────────────┐
+│ customers  │
+│ service    │
+│ 8083       │
+└────────────┘
+
+┌────────────────────────────┐
+│         Keycloak           │
+│  OAuth2 / OpenID Connect   │
+│  Port: 8095                │
+└────────────────────────────┘

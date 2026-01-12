@@ -1,0 +1,9 @@
+Jenkins
+ ├─ Checkout repos
+ ├─ mvn package (all backend services)
+ ├─ docker build angular-ui   ← Angular build happens here
+ ├─ docker build gateway-service
+ ├─ docker build inventory-service
+ ├─ docker build customers-service
+ ├─ docker build orders-service
+ └─ docker compose up -d

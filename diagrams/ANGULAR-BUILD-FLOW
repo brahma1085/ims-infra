@@ -1,0 +1,16 @@
+docker build angular-ui
+ ├─ node:20-alpine
+ │   ├─ npm ci
+ │   └─ ng build --configuration=production
+ └─ nginx:alpine
+     ├─ copy dist → /usr/share/nginx/html
+     └─ copy nginx.conf
+
+All this happens inside Docker during Jenkins build step
+✔ No need to install Node.js locally
+✔ No need to install Angular CLI locally
+✔ Clean, repeatable builds
+✔ Production-ready Angular app served by Nginx
+✔ Same build everywhere
+✔ No Jenkins filesystem issues
+✔ No WSL / Windows path bugs

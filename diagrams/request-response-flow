@@ -1,0 +1,34 @@
+1️⃣ User opens UI
+Browser
+  → http://localhost:8090
+  → nginx serves index.html + JS/CSS
+✔ No Spring involved
+✔ No Gateway involved
+✔ Pure static hosting
+
+2️⃣ User clicks Login
+Angular App
+  → Redirect to Keycloak
+  → http://localhost:8095/realms/.../auth
+✔ Client: angular-ui
+✔ Redirect URI: http://localhost:8090/*
+
+3️⃣ Keycloak Authentication
+Keycloak
+  → Login success
+  → Redirect back to Angular with auth code
+Angular exchanges code → gets JWT
+
+4️⃣ Angular calls backend API
+Angular
+  → GET /api/orders
+What actually happens:
+Browser
+ → Nginx (angular-ui)
+ → proxy_pass http://gateway-service:8080/api/orders
+ → Gateway validates JWT
+ → Gateway routes to orders-service
+ → Response flows back
+✔ Browser never sees backend ports
+✔ Gateway never exposed to public
+✔ Perfect security boundary
