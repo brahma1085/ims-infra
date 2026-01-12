@@ -11,15 +11,15 @@ pipeline {
 	environment {
 		REGISTRY = "local"
 		COMPOSE_DIR = "ims-infra/docker"
-		ANGULAR_DIST = "ims-infra/docker/angular-dist"
-		NPM_CONFIG_CACHE = "/var/jenkins_home/.npm"
+		//ANGULAR_DIST = "ims-infra/docker/angular-dist"
+		//NPM_CONFIG_CACHE = "/var/jenkins_home/.npm"
 		JAVA_OPTS="-Dorg.jenkinsci.plugins.durabletask.BourneShellScript.HEARTBEAT_CHECK_INTERVAL=86400"
 	}
 
 	tools {
 		jdk 'jdk21'
 		maven 'maven3'
-		nodejs 'node20'
+		//nodejs 'node20'
 	}
 
 	stages {
@@ -74,7 +74,7 @@ pipeline {
 				}
 			}
 		}
-        stage('Build Angular UI') {
+        /* stage('Build Angular UI') {
           steps {
             dir('ims-angular-ui') {
               sh '''
@@ -90,11 +90,11 @@ pipeline {
             sh '''
               rm -rf ims-infra/docker/angular-dist
               mkdir -p ims-infra/docker/angular-dist
-              cp -r ims-angular-ui/dist/angular-ui-cli/browser *//* ims-infra/docker/angular-dist/
+              cp -r ims-angular-ui/dist/angular-ui-cli/browser *//*  *//* ims-infra/docker/angular-dist/
               test -f ims-infra/docker/angular-dist/index.html
             '''
           }
-        }
+        } */
         stage('Gateway') {
             steps {
                 dir('ims-gateway-service') {
@@ -140,7 +140,7 @@ pipeline {
               #wait $BUILD_PID
 
               #echo "🚀 Building backend images"
-              #docker build -t angular-ui ./ims-angular-ui
+              docker build -t angular-ui ./ims-angular-ui
               docker build -t gateway-service ./ims-gateway-service
               docker build -t inventory-service ./ims-inventory-service
               docker build -t customers-service ./ims-customer-service
