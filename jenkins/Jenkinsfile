@@ -124,16 +124,30 @@ pipeline {
             }
         }
         stage('Docker Build Images') {
-            steps {
-                sh '''
-                docker build -t angular-ui ./ims-angular-ui
-                docker build -t gateway-service ./ims-gateway-service
-                docker build -t inventory-service ./ims-inventory-service
-                docker build -t customers-service ./ims-customer-service
-                docker build -t orders-service ./ims-order-service
-                '''
-            }
+          steps {
+            sh '''
+              echo "🚀 Building Angular UI image (with keepalive)"
+              docker build --progress=plain -t angular-ui ./ims-angular-ui &
+
+              BUILD_PID=$!
+
+              # Jenkins keepalive – prints every 15s
+              while kill -0 $BUILD_PID 2>/dev/null; do
+                echo "⏳ Angular Docker build still running..."
+                sleep 15
+              done
+
+              wait $BUILD_PID
+
+              echo "🚀 Building backend images"
+              docker build -t gateway-service ./ims-gateway-service
+              docker build -t inventory-service ./ims-inventory-service
+              docker build -t customers-service ./ims-customer-service
+              docker build -t orders-service ./ims-order-service
+            '''
+          }
         }
+
         stage('Deploy via Docker Compose') {
                     steps {
                         dir("${COMPOSE_DIR}") {
