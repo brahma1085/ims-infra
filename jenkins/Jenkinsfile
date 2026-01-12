@@ -74,7 +74,7 @@ pipeline {
 				}
 			}
 		}
-        /* stage('Build Angular UI') {
+        stage('Build Angular UI') {
           steps {
             dir('ims-angular-ui') {
               sh '''
@@ -94,7 +94,7 @@ pipeline {
               test -f ims-infra/docker/angular-dist/index.html
             '''
           }
-        } */
+        }
         stage('Gateway') {
             steps {
                 dir('ims-gateway-service') {
@@ -140,7 +140,7 @@ pipeline {
               #wait $BUILD_PID
 
               #echo "🚀 Building backend images"
-              docker build -t angular-ui ./ims-angular-ui
+              #docker build -t angular-ui ./ims-angular-ui
               docker build -t gateway-service ./ims-gateway-service
               docker build -t inventory-service ./ims-inventory-service
               docker build -t customers-service ./ims-customer-service
