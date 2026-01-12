@@ -145,7 +145,7 @@ services:
   # ANGULAR UI (SERVES dist/ via NGINX)
   # ==========================================================
   angular-ui:
-    image: nginx:alpine
+    image: angular-ui:latest
     container_name: angular-ui
     ports:
       - "8090:80"
