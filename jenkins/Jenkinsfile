@@ -28,19 +28,15 @@ pipeline {
                     steps {
                         sh '''
                             echo "===== Pre-flight checks ====="
-
                             echo "1️⃣ Checking Docker availability"
                             docker version || { echo "❌ Docker not running"; exit 1; }
-
                             echo "2️⃣ Checking docker compose"
                             docker compose version || { echo "❌ docker compose not available"; exit 1; }
-
                             echo "3️⃣ Checking Node / Maven / Java"
                             node -v
                             npm -v
                             mvn -v
                             java -version
-
                             echo "4️⃣ Checking for port conflicts"
                             for p in 8080 8081 8082 8083 8090 8095; do
                               if ss -lnt | grep -q ":$p "; then
@@ -48,7 +44,6 @@ pipeline {
                                 exit 1
                               fi
                             done
-
                             echo "✅ Pre-flight checks passed"
                         '''
                     }
@@ -59,20 +54,6 @@ pipeline {
 				deleteDir()
 			}
 		}
-
-		/* stage('DEBUG: Shell Test') {
-			steps {
-				sh '''
-				  set -x
-				  echo "Shell is working"
-				  which sh
-				  which bash || true
-				  ls -l /bin || true
-				'''
-			}
-		} */
-
-
 		stage('Checkout Repositories') {
 			steps {
 				withCredentials([usernamePassword(
@@ -81,105 +62,79 @@ pipeline {
 					passwordVariable: 'GIT_TOKEN'
 				)]) {
 					sh '''
-        set -e
-
-        echo "Git user is: $GIT_USER"
-
-        git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-infra.git
-        git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-angular-ui.git
-        git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-gateway-service.git
-        git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-inventory-service.git
-        git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-customer-service.git
-        git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-order-service.git
-      '''
+                    set -e
+                    echo "Git user is: $GIT_USER"
+                    git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-infra.git
+                    git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-angular-ui.git
+                    git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-gateway-service.git
+                    git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-inventory-service.git
+                    git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-customer-service.git
+                    git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/brahma1085/ims-order-service.git
+                  '''
 				}
 			}
 		}
+        stage('Build Angular UI') {
+          steps {
+            dir('ims-angular-ui') {
+              sh '''
+                set -e
+                export PATH="$NODEJS_HOME/bin:$PATH"
+                node -v | grep v20
 
+                npm ci --no-audit --no-fund
+                npm run build -- --configuration=production
+              '''
+            }
 
-
-		/* stage('Build Angular UI') {
+            sh '''
+              rm -rf ims-infra/docker/angular-dist
+              mkdir -p ims-infra/docker/angular-dist
+              cp -r ims-angular-ui/dist/angular-ui-cli/browser/* ims-infra/docker/angular-dist/
+              test -f ims-infra/docker/angular-dist/index.html
+            '''
+          }
+        }
+        stage('Gateway') {
             steps {
-                timeout(time: 40, unit: 'MINUTES') {
-                    dir('ims-angular-ui') {
-                        sh '''
-                            set -e
-                            echo "🔍 Enforcing Node 20"
-                            export PATH="$NODEJS_HOME/bin:$PATH"
-
-                            node -v | grep v20
-
-                            echo "📦 Installing dependencies"
-                            npm ci --no-audit --no-fund
-
-                            echo "🏗️ Building Angular"
-                            npm run build -- --configuration=production
-                        '''
-                    }
+                dir('ims-gateway-service') {
+                    sh 'mvn clean package -DskipTests'
                 }
-
+            }
+        }
+        stage('Inventory') {
+            steps {
+                dir('ims-inventory-service') {
+                    sh 'mvn clean package -DskipTests'
+                }
+            }
+        }
+        stage('Customers') {
+            steps {
+                dir('ims-customer-service') {
+                    sh 'mvn clean package -DskipTests'
+                }
+            }
+        }
+        stage('Orders') {
+            steps {
+                dir('ims-order-service') {
+                    sh 'mvn clean package -DskipTests'
+                }
+            }
+        }
+        stage('Docker Build Images') {
+            steps {
                 sh '''
-                    echo "📦 Preparing Angular dist for Docker"
-                    rm -rf ${ANGULAR_DIST}
-                    mkdir -p ${ANGULAR_DIST}
-                    cp -r ims-angular-ui/dist/angular-ui-cli/browser *//* ${ANGULAR_DIST}/
-                    echo "🔎 Verifying Angular dist"
-                    ls -l ${ANGULAR_DIST}
-                    test -f ${ANGULAR_DIST}/index.html || { echo "❌ index.html missing"; exit 1; }
+                docker build -t angular-ui ./ims-angular-ui
+                docker build -t gateway-service ./ims-gateway-service
+                docker build -t inventory-service ./ims-inventory-service
+                docker build -t customers-service ./ims-customer-service
+                docker build -t orders-service ./ims-order-service
                 '''
             }
-        } */
-
-
-
-
-
-
-				stage('Gateway') {
-					steps {
-						dir('ims-gateway-service') {
-							sh 'mvn clean package -DskipTests'
-						}
-					}
-				}
-				stage('Inventory') {
-					steps {
-						dir('ims-inventory-service') {
-							sh 'mvn clean package -DskipTests'
-						}
-					}
-				}
-				stage('Customers') {
-					steps {
-						dir('ims-customer-service') {
-							sh 'mvn clean package -DskipTests'
-						}
-					}
-				}
-				stage('Orders') {
-					steps {
-						dir('ims-order-service') {
-							sh 'mvn clean package -DskipTests'
-						}
-					}
-				}
-
-
-
-		stage('Docker Build Images') {
-			steps {
-				sh '''
-				docker build -t angular-ui ./ims-angular-ui
-				docker build -t gateway-service ./ims-gateway-service
-				docker build -t inventory-service ./ims-inventory-service
-				docker build -t customers-service ./ims-customer-service
-				docker build -t orders-service ./ims-order-service
-				'''
-			}
-		}
-
-
-		stage('Deploy via Docker Compose') {
+        }
+        stage('Deploy via Docker Compose') {
                     steps {
                         dir("${COMPOSE_DIR}") {
                             sh '''
@@ -192,7 +147,7 @@ pipeline {
                         }
                     }
                 }
-	}
+        }
 
 	post {
 		success {

@@ -145,11 +145,12 @@ services:
   # ANGULAR UI (SERVES dist/ via NGINX)
   # ==========================================================
   angular-ui:
-    image: angular-ui:latest
+    build:
+      context: .
+      dockerfile: angular/Dockerfile
     container_name: angular-ui
     ports:
       - "8090:80"
-    restart: unless-stopped
     depends_on:
       - gateway-service
 
