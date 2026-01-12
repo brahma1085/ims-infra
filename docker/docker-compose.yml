@@ -59,8 +59,8 @@ services:
   gateway-service:
     build: ../../gateway-service
     container_name: gateway-service
-    ports:
-      - "5005:5005"   # For remote debugging
+    #ports:
+     # - "5005:5005"   # For remote debugging
     expose:
         - "8080"
     environment:
@@ -150,7 +150,7 @@ services:
     ports:
       - "8090:80"
     volumes:
-      - ./angular-dist:/usr/share/nginx/html:ro
+      - ${PWD}/angular-dist:/usr/share/nginx/html:ro
       - ./nginx:/etc/nginx/conf.d:ro
     restart: unless-stopped
     depends_on:
