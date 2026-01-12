@@ -98,7 +98,7 @@ pipeline {
 
 
 
-		stage('Build Angular UI') {
+		/* stage('Build Angular UI') {
             steps {
                 timeout(time: 40, unit: 'MINUTES') {
                     dir('ims-angular-ui') {
@@ -122,13 +122,13 @@ pipeline {
                     echo "📦 Preparing Angular dist for Docker"
                     rm -rf ${ANGULAR_DIST}
                     mkdir -p ${ANGULAR_DIST}
-                    cp -r ims-angular-ui/dist/angular-ui-cli/browser/* ${ANGULAR_DIST}/
+                    cp -r ims-angular-ui/dist/angular-ui-cli/browser *//* ${ANGULAR_DIST}/
                     echo "🔎 Verifying Angular dist"
                     ls -l ${ANGULAR_DIST}
                     test -f ${ANGULAR_DIST}/index.html || { echo "❌ index.html missing"; exit 1; }
                 '''
             }
-        }
+        } */
 
 
 
@@ -169,11 +169,12 @@ pipeline {
 		stage('Docker Build Images') {
 			steps {
 				sh '''
-      docker build -t gateway-service ./ims-gateway-service
-      docker build -t inventory-service ./ims-inventory-service
-      docker build -t customers-service ./ims-customer-service
-      docker build -t orders-service ./ims-order-service
-    '''
+				docker build -t angular-ui ./ims-angular-ui
+				docker build -t gateway-service ./ims-gateway-service
+				docker build -t inventory-service ./ims-inventory-service
+				docker build -t customers-service ./ims-customer-service
+				docker build -t orders-service ./ims-order-service
+				'''
 			}
 		}
 

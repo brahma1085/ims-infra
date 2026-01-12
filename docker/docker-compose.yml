@@ -149,9 +149,6 @@ services:
     container_name: angular-ui
     ports:
       - "8090:80"
-    volumes:
-      - ${PWD}/angular-dist:/usr/share/nginx/html:ro
-      - ./nginx:/etc/nginx/conf.d:ro
     restart: unless-stopped
     depends_on:
       - gateway-service
